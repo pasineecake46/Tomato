@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050307">
+<title>For You ♥</title>
+
+<style>
+* { box-sizing: border-box; }
+
+:root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+html, body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    min-height: 100svh;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #200812 0%, #080407 65%, #020203 100%);
+    color: #ffdce4;
+    font-family: Georgia, "Noto Sans Thai", "Segoe UI", sans-serif;
+}
+
+.heading {
+    position: fixed;
+    z-index: 5;
+    top: max(16px, env(safe-area-inset-top));
+    left: 8px;
+    right: 8px;
+    text-align: center;
+    font-size: clamp(13px, 2.5vw, 20px);
+    color: #ffd0da;
+    text-shadow: 0 0 12px #ff174b;
+}
+
+.page {
+    width: 100%;
+    height: 100svh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#heart {
+    position: relative;
+    width: min(96vw, 900px);
+    height: min(78svh, 780px);
+    flex: none;
+}
+
+
+/* แต่ละประโยคลอยเข้ามาจากตำแหน่งสุ่ม แล้วไปประกอบเป็นรูปหัวใจ */
+.word {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    line-height: 1;
+    font-weight: 600;
+    color: #ff9aaa;
+    text-shadow: 0 0 4px #ff3159, 0 0 9px rgba(255, 23, 75, .8);
+    opacity: 0;
+    pointer-events: none;
+    animation: fly 1s cubic-bezier(.2, .8, .25, 1) forwards;
+}
+
+.word.center {
+    z-index: 3;
+    color: #fff1f4;
+    font-weight: bold;
+    font-style: italic;
+    text-shadow: 0 0 8px #ff607c, 0 0 22px #ff174b, 0 0 42px #ff174b;
+    animation: pop 1.2s ease-out forwards;
+}
+
+.hint {
+    position: fixed;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: 10px;
+    right: 190px;
+    text-align: center;
+    font-size: 11px;
+    color: #d7a8b4;
+}
+
+.btns {
+    position: fixed;
+    z-index: 11;
+    right: 12px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    border: 1px solid #ff8297;
+    border-radius: 999px;
+    padding: 8px 13px;
+    color: #ffe6eb;
+    background: #300b19;
+    font-size: 12px;
+    cursor: pointer;
+}
+.btn:hover { background: #64132c; }
+
+@keyframes fly {
+    from {
+        opacity: 0;
+        filter: blur(6px);
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.7);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes pop {
+    from { opacity: 0; filter: blur(8px); transform: translate(-50%, -50%) scale(.4); }
+    to   { opacity: 1; filter: blur(0);   transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (max-width: 600px) {
+    #heart { width: 100vw; height: 72svh; }
+    .hint { text-align: left; font-size: 10px; right: 160px; }
+    .btn { font-size: 11px; padding: 7px 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .word, .word.center { animation-duration: .01ms; }
+}
+</style>
+</head>
+
+<body>
+
+<main class="page">
+    <div id="heart" aria-label="ข้อความบอกรักเรียงตัวเป็นรูปหัวใจ"></div>
+</main>
+
+<div class="btns">
+    <button class="btn" id="skip" type="button">ข้าม ›</button>
+    <button class="btn" id="restart" type="button">เริ่มใหม่ ↻</button>
+</div>
+
+<script>
+/* ✏️ แก้ประโยคตรงนี้ได้เลย — จะลอยขึ้นมาทีละประโยคตามลำดับ
+   (ใส่ทั้งประโยคสั้นและยาวปนกันได้ เพื่อให้เรียงเต็มรูปหัวใจ) */
+const sentences = [
+    "I love you",
+    "Te amo",
+     "Je t'aime",
+    "愛してる",
+    "รักนะ ♥",
+    "Ich liebe dich",
+    "My love",
+    "사랑해",
+    "Ti amo",
+    "My babe",
+    "我爱你",
+    "Eu te amo",
+    "Я тебя люблю",
+    "รักเธอ",
+    "Anh yêu em",
+    "Aku cinta kamu",
+    "Mahal kita",
+    "Σ' αγαπώ",
+    "คิดถึงงงง",
+    "Ik hou van je",
+    "Jag älskar dig",
+    "Kocham cię",
+    "أحبك",
+    "ขอให้เธอมีความสุขทุกวัน",
+    "Forever ♥"
+];
+
+const STEP = 0.45;        // วินาทีระหว่างแต่ละประโยค (ถ้าประโยคเยอะ จะถูกบีบให้เร็วขึ้นอัตโนมัติ)
+const MAX_TOTAL = 16;     // เวลารวมสูงสุดก่อนหัวใจครบ (วินาที)
+
+const heart = document.getElementById("heart");
+const ctx = document.createElement("canvas").getContext("2d");
+const FONT_FAMILY = 'Georgia, "Noto Sans Thai", "Segoe UI", sans-serif';
+
+// สมการหัวใจ: (x²+y²-1)³ - x²y³ <= 0
+function isInsideHeart(x, y) {
+    const a = x * x + y * y - 1;
+    return a * a * a - x * x * y * y * y <= 0;
+}
+
+// ช่วง x ที่อยู่ในหัวใจที่ความสูง y (ด้านบนจะได้ 2 ช่วง เพราะมีร่องตรงกลาง)
+function getIntervals(y) {
+    const intervals = [];
+    let start = null;
+    const step = 0.004;
+    for (let x = -1.3; x <= 1.3; x += step) {
+        const inside = isInsideHeart(x, y);
+        if (inside && start === null) start = x;
+        if (!inside && start !== null) {
+            intervals.push([start, x - step]);
+            start = null;
+        }
+    }
+    if (start !== null) intervals.push([start, 1.3]);
+    return intervals;
+}
+
+function measure(text, fs, weight = "600", style = "normal") {
+    ctx.font = `${style} ${weight} ${fs}px ${FONT_FAMILY}`;
+    return ctx.measureText(text).width;
+}
+
+let pool = 0;   // ตัวชี้ประโยคถัดไป (วนซ้ำตามลำดับ)
+
+function nextFitting(maxW, fs) {
+    // ลองไล่ประโยคถัดไป ๆ จนเจอที่ใส่ในที่ว่างได้
+    for (let i = 0; i < sentences.length; i++) {
+        const idx = (pool + i) % sentences.length;
+        const w = measure(sentences[idx], fs);
+        if (w <= maxW) {
+            pool = idx + 1;
+            return { t: sentences[idx], w };
+        }
+    }
+    return null;
+}
+
+function drawHeart(instant = false) {
+    heart.replaceChildren();
+    pool = 0;
+
+    const W = heart.clientWidth;
+    const H = heart.clientHeight;
+
+    const s = Math.min(W / 2.4, H / 2.4);
+    const yCenter = 0.13;
+    const fs = Math.max(9, Math.min(16, s / 26));
+    const rowStep = fs * 1.3;
+    const gap = fs * 0.9;
+
+    const items = [];
+
+    // 1) จัดตำแหน่งประโยคทั้งหมดให้เต็มรูปหัวใจ (บนลงล่าง ซ้ายไปขวา)
+    for (let py = fs; py < H - fs; py += rowStep) {
+        const y = yCenter - (py - H / 2) / s;
+        const intervals = getIntervals(y);
+
+        for (const [x0, x1] of intervals) {
+            const pad = 0.03;
+            const left = W / 2 + (x0 + pad) * s;
+            const right = W / 2 + (x1 - pad) * s;
+            const avail = right - left;
+            if (avail < fs * 2) continue;
+
+            const line = [];
+            let total = 0;
+            while (true) {
+                const room = avail - total - (line.length ? gap : 0);
+                const pick = nextFitting(room, fs);
+                if (!pick) break;
+                line.push(pick);
+                total += (line.length > 1 ? gap : 0) + pick.w;
+            }
+            if (!line.length) continue;
+
+            // กระจายช่องว่างให้เต็มแถว
+            const extra = avail - total;
+            let useGap = gap;
+            let startX = left;
+            if (line.length > 1 && extra / (line.length - 1) < gap * 3) {
+                useGap = gap + extra / (line.length - 1);
+            } else {
+                startX = left + extra / 2;
+            }
+
+            let cursor = startX;
+            for (const item of line) {
+                const centerX = cursor + item.w / 2;
+                cursor += item.w + useGap;
+
+                items.push({ t: item.t, x: centerX, y: py });
+            }
+        }
+    }
+
+    // 2) สร้างทีละประโยค หน่วงเวลาให้ขึ้นมาเรียงกัน
+    const step = Math.min(STEP, MAX_TOTAL / Math.max(items.length, 1));
+    const maxR = Math.max(W, H) * 0.35;
+
+    items.forEach((it, i) => {
+        const el = document.createElement("span");
+        el.className = "word";
+        el.textContent = it.t;
+        el.style.fontSize = fs + "px";
+        el.style.left = it.x + "px";
+        el.style.top = it.y + "px";
+
+        // ทิศที่ประโยคลอยเข้ามา (สุ่มรอบ ๆ ตำแหน่งปลายทาง)
+        const ang = Math.random() * Math.PI * 2;
+        const r = maxR * (0.4 + Math.random() * 0.6);
+        el.style.setProperty("--dx", Math.cos(ang) * r + "px");
+        el.style.setProperty("--dy", Math.sin(ang) * r + "px");
+
+        if (instant) {
+            el.style.animationDuration = ".01ms";
+        } else {
+            el.style.animationDelay = (i * step).toFixed(3) + "s";
+        }
+        heart.appendChild(el);
+    });
+
+}
+
+function start() { drawHeart(false); }
+function skip()  { drawHeart(true); }
+
+document.getElementById("restart").addEventListener("click", start);
+document.getElementById("skip").addEventListener("click", skip);
+
+// รอให้ฟอนต์โหลดเสร็จก่อนวัดความกว้าง จะได้เรียงตรงขอบ
+(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(start);
+
+let resizeTimer;
+window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(skip, 180);   // ย่อ/ขยายหน้าจอ → วาดใหม่ทันที ไม่ต้องรอแอนิเมชัน
+}); 
+</script>
+
+</body>
+</html>
